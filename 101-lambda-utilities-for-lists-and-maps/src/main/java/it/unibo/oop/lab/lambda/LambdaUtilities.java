@@ -84,9 +84,9 @@ public final class LambdaUtilities {
         /*
          * Suggestion: consider Map.merge
          */
-        final Map<R,Set<T>> listMap = new HashMap<>();
+        final Map<R, Set<T>> listMap = new HashMap<>();
         list.forEach(t -> { 
-            listMap.merge(op.apply(t), new HashSet<>(Arrays.asList(t)), (t1,t2) -> {
+            listMap.merge(op.apply(t), new HashSet<>(Arrays.asList(t)), (t1, t2) -> {
                 t1.addAll(t2);
                 return t1;
             });
@@ -113,7 +113,7 @@ public final class LambdaUtilities {
          * Keep in mind that a map can be iterated through its forEach method
          */
         final Map<K, V> map2 = new HashMap<>();
-        map.forEach((k,v) -> map2.put(k, v.orElse(def.get())));
+        map.forEach((k, v) -> map2.put(k, v.orElse(def.get())));
         return map2;
     }
 
@@ -123,7 +123,7 @@ public final class LambdaUtilities {
      */
     @SuppressWarnings("PMD.SystemPrintln")
     public static void main(final String[] args) {
-        final List<Integer> li = IntStream.range(1, 8).mapToObj(i -> Integer.valueOf(i)).collect(Collectors.toList());
+        final List<Integer> li = IntStream.range(1, 8).mapToObj(Integer::valueOf).collect(Collectors.toList());
         System.out.println(dup(li, x -> x + 100));
         /*
          * [1, 101, 2, 102, 3, 103, 4, 104, 5, 105, 6, 106, 7, 107]
