@@ -1,8 +1,11 @@
 package it.unibo.mvc;
 
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
+import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.List;
+import java.util.StringTokenizer;
 
 /**
  */
@@ -15,7 +18,7 @@ public final class DrawNumberApp implements DrawNumberViewObserver {
      * @param views
      *            the views to attach
      */
-    public DrawNumberApp(final DrawNumberView... views) {
+    public DrawNumberApp(final String configFile, final DrawNumberView... views) {
         /*
          * Side-effect proof
          */
@@ -24,7 +27,31 @@ public final class DrawNumberApp implements DrawNumberViewObserver {
             view.setObserver(this);
             view.start();
         }
-        this.model = new DrawNumberImpl(new Configuration.Builder().build());
+        final Configuration.Builder confBuilder = new Configuration.Builder();
+        try (var br = new BufferedReader(new InputStreamReader(ClassLoader.getSystemResourceAsStream(configFile)))){
+            for (String line = br.readLine(); line != null; line = br.readLine()) {
+                final StringTokenizer st = new StringTokenizer(line, ":");
+                switch (st.nextToken()) {
+                    case "minimum":
+                        confBuilder.setMin(Integer.parseInt(st.nextToken().trim()));
+                        break;
+                    case "maximum":
+                        confBuilder.setMax(Integer.parseInt(st.nextToken().trim()));
+                        break;
+                    case "attempts":
+                        confBuilder.setAttempts(Integer.parseInt(st.nextToken().trim()));
+                        break;
+                    default:
+                        throw new IllegalStateException("I can't understand [" + line + "]");
+                }
+            }
+        } catch (final Exception e) {
+            for (final DrawNumberView view: views) {
+                view.displayError(e.getMessage());
+            }
+        }
+        Configuration configuration = confBuilder.build();
+        this.model = new DrawNumberImpl(configuration);
     }
 
     @Override
@@ -63,7 +90,11 @@ public final class DrawNumberApp implements DrawNumberViewObserver {
      * @throws FileNotFoundException 
      */
     public static void main(final String... args) throws FileNotFoundException {
-        new DrawNumberApp(new DrawNumberViewImpl());
+        new DrawNumberApp("config.yml",
+                new DrawNumberViewImpl(),
+                new DrawNumberViewImpl(),
+                new PrintStreamView(System.out),
+                new PrintStreamView("output.txt"));
     }
 
 }
